@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env*
+.streamlit/secrets.toml
+data/accounts.csv
+data/emergency.csv
+data/incidents.csv
+data/reports.csv
+data/evidence.csv
+data/uploads/*
+data/users.csv
+data/*.sqlite3
+data/*.sqlite3-shm
+data/*.sqlite3-wal
