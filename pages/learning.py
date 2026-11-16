@@ -12,15 +12,7 @@ st.write(
 )
 st.divider()
 
-selected_topic = st.selectbox(
-    "Choose a topic:",
-    [
-        "Women's Safety Rules",
-        "Legal Rights in India",
-        "Constitutional Rights",
-        "What To Do in an Unsafe Situation",
-    ],
-)
+selected_topic = st.selectbox("Choose a topic:", list(GUIDANCE_TOPICS))
 
 if selected_topic == "Women's Safety Rules":
     st.subheader("🛡️ Women's Safety Rules")

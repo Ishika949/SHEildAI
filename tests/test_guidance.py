@@ -1,6 +1,6 @@
 import unittest
 
-from guidance import search_guidance
+from guidance import GUIDANCE_TOPICS, search_guidance
 import utils
 from streamlit.testing.v1 import AppTest
 
@@ -60,12 +60,7 @@ class GuidanceTests(unittest.TestCase):
         self.assertEqual([header.value for header in app.header], ["📚 Learn & Know"])
         self.assertEqual(
             app.selectbox[0].options,
-            [
-                "Women's Safety Rules",
-                "Legal Rights in India",
-                "Constitutional Rights",
-                "What To Do in an Unsafe Situation",
-            ],
+            list(GUIDANCE_TOPICS),
         )
 
         expected_content = {
@@ -142,6 +137,7 @@ class GuidanceTests(unittest.TestCase):
             emoji,
         ) in expected_content.items():
             app.selectbox[0].set_value(topic).run()
+            self.assertFalse(app.exception, f"Selecting {topic!r} raised an exception.")
             rendered_markdown = "\n".join(item.value for item in app.markdown)
             for point in points:
                 self.assertIn(point, rendered_markdown, topic)
