@@ -1,26 +1,26 @@
 [theme]
 base = "dark"
-primaryColor = "#14B8A6"
-backgroundColor = "#0B172A"
-secondaryBackgroundColor = "#14263D"
-textColor = "#F0F5FA"
-linkColor = "#5EEAD4"
-borderColor = "#294158"
+primaryColor = "#34D399"
+backgroundColor = "#101B17"
+secondaryBackgroundColor = "#192B23"
+textColor = "#ECFDF5"
+linkColor = "#6EE7B7"
+borderColor = "#345344"
 
 yellowColor = "#FBBF24"
-yellowBackgroundColor = "#332C1C"
+yellowBackgroundColor = "#332D1D"
 yellowTextColor = "#FDE68A"
 
 blueColor = "#60A5FA"
-blueBackgroundColor = "#172D49"
+blueBackgroundColor = "#1B2C3C"
 blueTextColor = "#BFDBFE"
 
 redColor = "#F87171"
-redBackgroundColor = "#3B2028"
+redBackgroundColor = "#3B2425"
 redTextColor = "#FECACA"
 
 greenColor = "#34D399"
-greenBackgroundColor = "#17382F"
+greenBackgroundColor = "#1C382C"
 greenTextColor = "#A7F3D0"
 
 font = "sans-serif"
@@ -30,8 +30,8 @@ showWidgetBorder = true
 showSidebarBorder = true
 
 [theme.sidebar]
-backgroundColor = "#101F34"
-secondaryBackgroundColor = "#14263D"
-textColor = "#F0F5FA"
-primaryColor = "#5EEAD4"
-borderColor = "#294158"
+backgroundColor = "#17271F"
+secondaryBackgroundColor = "#1C382C"
+textColor = "#ECFDF5"
+primaryColor = "#6EE7B7"
+borderColor = "#345344"
