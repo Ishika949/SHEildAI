@@ -35,14 +35,14 @@ class AuthPageTests(unittest.TestCase):
         app.text_input(key="signup_confirm_password").set_value("different-pass")
         app.button[0].click().run()
         self.assertIn("The passwords do not match.", [error.value for error in app.error])
-        with utils._database() as connection:
-            account_count = connection.execute("SELECT COUNT(*) FROM accounts").fetchone()[0]
-        self.assertEqual(account_count, 0)
+        self.assertIsNone(
+            utils.authenticate("demo@example.test", "demo-pass-123")
+        )
 
         app.text_input(key="signup_confirm_password").set_value("demo-pass-123")
         app.button[0].click().run()
         self.assertEqual(app.session_state["current_user"]["email"], "demo@example.test")
-        self.assertEqual([title.value for title in app.title], ["Dashboard"])
+        self.assertEqual([title.value for title in app.title], ["🛡️ SHEild AI"])
 
     def test_login_signs_in_and_opens_dashboard(self):
         utils.create_account("demo@example.test", "Demo Student", "", "demo-pass-123")
@@ -51,7 +51,7 @@ class AuthPageTests(unittest.TestCase):
         app.text_input(key="login_password").set_value("demo-pass-123")
         app.button[0].click().run()
         self.assertEqual(app.session_state["current_user"]["email"], "demo@example.test")
-        self.assertEqual([title.value for title in app.title], ["Dashboard"])
+        self.assertEqual([title.value for title in app.title], ["🛡️ SHEild AI"])
 
     def test_login_rejects_an_incorrect_password(self):
         utils.create_account("demo@example.test", "Demo Student", "", "demo-pass-123")
@@ -83,6 +83,25 @@ class AuthPageTests(unittest.TestCase):
             "Account details are stored in this app.",
             [caption.value for caption in app.caption],
         )
+
+    def test_profile_saves_updated_name_and_phone(self):
+        account = utils.create_account(
+            "profile-update@example.test",
+            "Profile Tester",
+            "",
+            "test-password-123",
+        )
+        app = AppTest.from_file(str(utils.BASE_DIR / "app.py"), default_timeout=15).run()
+        app.session_state["current_user"] = account
+        app.switch_page("pages/profile.py").run()
+
+        app.text_input(key="profile_name").set_value("Updated Profile")
+        app.text_input(key="profile_phone").set_value("555-0101")
+        app.button(key="save_profile").click().run()
+
+        self.assertIn("Profile saved.", [item.value for item in app.success])
+        self.assertEqual(app.session_state["current_user"]["name"], "Updated Profile")
+        self.assertEqual(app.session_state["current_user"]["phone"], "555-0101")
 
     def test_login_and_signup_show_images_without_captions(self):
         for page_name in ("login", "signup"):

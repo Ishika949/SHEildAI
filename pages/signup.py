@@ -1,11 +1,9 @@
-import sqlite3
-
 import streamlit as st
 
 from utils import BASE_DIR, create_account, render_page_sidebar
 
 render_page_sidebar()
-st.title("Sign Up")
+st.title("📝 Sign Up")
 st.write("Create an account to manage your contacts.")
 st.space("medium")
 
@@ -32,7 +30,7 @@ else:
                     key="signup_confirm_password",
                     type="password",
                 )
-                submitted = st.form_submit_button("Create account")
+                submitted = st.form_submit_button("📝 Create account")
 
     if submitted:
         if password != confirm_password:
@@ -45,12 +43,12 @@ else:
                 else:
                     st.session_state["current_user"] = account
                     st.switch_page("pages/dashboard.py")
-            except (ValueError, OSError, sqlite3.Error) as error:
+            except (ValueError, OSError) as error:
                 st.error(f"Account could not be created: {error}")
 
     with form_column:
         st.space("small")
-        st.page_link("pages/login.py", label="Already have an account? Login")
+        st.page_link("pages/login.py", label="🔐 Already have an account? Login")
 
 with image_column:
     st.image(

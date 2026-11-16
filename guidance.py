@@ -1,47 +1,113 @@
 import re
 
 GUIDANCE_TOPICS = {
-    "Personal safety planning": {
-        "title": "Plan for the things you can control",
-        "introduction": "Practical steps can help you think through a situation before it happens.",
+    "Women's Safety Rules": {
+        "title": "Women's Safety Rules",
+        "introduction": "",
         "points": [
-            "Share your plans with someone you trust when it feels appropriate.",
-            "Keep a charged phone and important contacts accessible.",
-            "Prefer places where you can reach other people or ask staff for help.",
-            "If you feel at risk, prioritize getting to a safer place over collecting evidence.",
+            "Stay aware of your surroundings.",
+            "Keep emergency contacts easily accessible.",
+            "Inform a trusted person when travelling alone.",
+            "Avoid sharing personal information with strangers.",
+            "Move to a safe and populated place if you feel unsafe.",
+            "Report serious safety concerns to the appropriate authorities.",
         ],
-        "keywords": ["plan", "prepare", "trusted person", "phone", "contact", "public place"],
+        "ordered": True,
+        "keywords": [
+            "safety",
+            "rules",
+            "aware",
+            "surroundings",
+            "contact",
+            "travel",
+            "strangers",
+        ],
     },
-    "Basic rights": {
-        "title": "Know where to find reliable information",
-        "introduction": "In India, the Constitution includes protections related to equality and personal liberty. The right process depends on the circumstances.",
+    "Legal Rights in India": {
+        "title": "Legal Rights in India",
+        "introduction": (
+            "Indian law provides various protections against offences and unfair "
+            "treatment of women."
+        ),
         "points": [
-            "Article 14 concerns equality before the law.",
-            "Article 15 addresses discrimination, including discrimination on grounds of sex.",
-            "Article 21 protects life and personal liberty.",
-            "For a real situation, confirm current rules with an official source or local support organization.",
+            "Protection against sexual harassment",
+            "Protection against stalking",
+            "Protection against certain forms of assault",
+            "Protection against cruelty and certain marriage-related offences",
+            "Protection under the Bharatiya Nyaya Sanhita, 2023",
         ],
-        "keywords": ["rights", "law", "legal", "constitution", "article", "discrimination"],
+        "note": (
+            "This information is provided for educational awareness and is not "
+            "legal advice."
+        ),
+        "keywords": [
+            "rights",
+            "law",
+            "legal",
+            "harassment",
+            "stalking",
+            "assault",
+            "cruelty",
+            "Bharatiya Nyaya Sanhita",
+        ],
     },
-    "When something feels unsafe": {
-        "title": "Focus on immediate support",
-        "introduction": "Use your judgment and choose steps that fit your circumstances.",
+    "Constitutional Rights": {
+        "title": "Constitutional Rights",
+        "introduction": "",
         "points": [
-            "Move toward a populated place if you can do so safely.",
-            "Contact a trusted person and explain where you are.",
-            "Avoid confronting someone who may pose a danger.",
-            "Contact local emergency services when there is immediate danger.",
+            "Article 14 – Equality before law.",
+            "Article 15 – Prohibits discrimination on grounds including sex.",
+            "Article 15(3) – Special provisions can be made for women and children.",
+            "Article 16 – Equal opportunity in public employment.",
+            "Article 21 – Right to life and personal liberty.",
+            "Article 39(d) – Equal pay for equal work.",
+            "Article 42 – Humane working conditions and maternity relief.",
         ],
-        "keywords": ["unsafe", "scared", "danger", "followed", "threat", "help"],
+        "note": (
+            "These provisions support equality, dignity and protection of women."
+        ),
+        "ordered": False,
+        "keywords": [
+            "constitution",
+            "constitutional",
+            "rights",
+            "article",
+            "equality",
+            "discrimination",
+            "employment",
+            "maternity",
+        ],
     },
-    "Emergency help": {
-        "title": "Use local, current emergency guidance",
-        "introduction": "Use the emergency number and services available in your area.",
+    "What To Do in an Unsafe Situation": {
+        "title": "What To Do in an Unsafe Situation",
+        "introduction": "",
         "points": [
-            "If you are in India, 112 is the national emergency number. Check official sources for current details.",
-            "Save contacts you trust on your own device.",
+            "Move towards a safe and populated place.",
+            "Contact a trusted family member, friend or teacher.",
+            "Seek emergency help if there is immediate danger.",
+            "Clearly explain your situation to someone you trust.",
+            "Avoid confronting someone who may be dangerous.",
+            "Report the incident to the appropriate authority when appropriate.",
         ],
-        "keywords": ["emergency", "call", "police", "number", "helpline", "SOS"],
+        "ordered": True,
+        "warning": (
+            "If you are in immediate danger, focus on reaching a safe place "
+            "and getting help."
+        ),
+        "keywords": [
+            "unsafe",
+            "scared",
+            "danger",
+            "followed",
+            "threat",
+            "help",
+            "emergency",
+            "call",
+            "police",
+            "number",
+            "helpline",
+            "SOS",
+        ],
     },
 }
 

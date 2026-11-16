@@ -19,21 +19,16 @@ def assistant_reply(question):
 
 
 render_page_sidebar()
-st.title("AI Chat")
-
-intro_column, image_column = st.columns([1.3, 0.9], gap="large")
-with intro_column:
-    st.write("Ask about safety planning, rights, or getting help.")
-with image_column:
-    st.image(
-        str(BASE_DIR / "assets" / "images" / "img-chat.png"),
-        width="stretch",
-    )
-
-st.space("medium")
+st.title("🛡️ SHEild AI")
+st.header("💬 AI Chat")
+st.write("Ask about safety planning, rights, or getting help.")
+st.image(
+    str(BASE_DIR / "assets" / "images" / "img-chat.png"),
+    width="stretch",
+)
 
 st.session_state.setdefault("ai_chat_messages", [INITIAL_MESSAGE.copy()])
-if st.button("Clear chat", key="clear_ai_chat"):
+if st.button("🧹 Clear chat", key="clear_ai_chat"):
     st.session_state["ai_chat_messages"] = [INITIAL_MESSAGE.copy()]
 
 for message in st.session_state["ai_chat_messages"]:

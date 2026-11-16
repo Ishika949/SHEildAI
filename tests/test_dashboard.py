@@ -23,17 +23,41 @@ class DashboardTests(unittest.TestCase):
         utils.DATA_DIR = self.original_data_dir
         self.temporary_directory.cleanup()
 
+    def test_dashboard_saves_emergency_contacts(self):
+        app = AppTest.from_file(str(utils.BASE_DIR / "app.py"), default_timeout=15).run()
+        app.session_state["current_user"] = self.account
+        app.switch_page("pages/dashboard.py").run()
+
+        self.assertEqual([title.value for title in app.title], ["🛡️ SHEild AI"])
+        self.assertIn(
+            "🚨 Emergency Dashboard",
+            [header.value for header in app.header],
+        )
+
+        app.text_input(key="contact_name_0").set_value("Alex Morgan")
+        app.text_input(key="contact_phone_0").set_value("555-0100")
+        app.button(key="save_contacts").click().run()
+
+        self.assertIn(
+            "Emergency contacts saved successfully.",
+            [item.value for item in app.success],
+        )
+        contacts = utils.load_contacts(self.account["id"])
+        self.assertEqual(len(contacts), 1)
+        self.assertEqual(contacts[0]["name"], "Alex Morgan")
+        self.assertEqual(contacts[0]["phone"], "555-0100")
+
     def test_sos_button_plays_local_audio_and_can_stop_it(self):
         app = AppTest.from_file(str(utils.BASE_DIR / "app.py"), default_timeout=15).run()
         app.session_state["current_user"] = self.account
         app.switch_page("pages/dashboard.py").run()
-        self.assertNotIn("SMS preview", [header.value for header in app.subheader])
+        self.assertNotIn("✉️ SMS preview", [header.value for header in app.subheader])
 
         app.button(key="play_sos_sound").click().run()
 
         self.assertEqual(len(app.get("audio")), 1)
         self.assertEqual(len(app.get("video")), 0)
-        self.assertIn("SMS preview", [header.value for header in app.subheader])
+        self.assertIn("✉️ SMS preview", [header.value for header in app.subheader])
         self.assertEqual(
             app.session_state["sos_sound_requested"],
             True,
@@ -43,7 +67,7 @@ class DashboardTests(unittest.TestCase):
 
         self.assertEqual(len(app.get("audio")), 0)
         self.assertEqual(app.session_state["sos_sound_requested"], False)
-        self.assertNotIn("SMS preview", [header.value for header in app.subheader])
+        self.assertNotIn("✉️ SMS preview", [header.value for header in app.subheader])
 
 
 if __name__ == "__main__":

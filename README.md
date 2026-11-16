@@ -37,22 +37,21 @@ Open `http://localhost:8501` in a browser. Stop the app with `Ctrl+C` in PowerSh
 - **Dashboard:** Requires an account. Saves up to three trusted contacts and plays the local 15-second SOS sound. The SMS preview is displayed in the app; no text message is sent.
 - **AI Chat:** Matches questions to safety guidance in Learning. It does not connect to an external AI service.
 - **Community Report:** Shows the public report feed and accepts reports with a concern type, location, urgency, and description. An account is not required.
-- **Learning:** Contains guidance about safety planning, basic rights, unsafe situations, and emergency help.
+- **Learning:** Covers women's safety, legal rights in India, constitutional rights, and what to do in an unsafe situation.
 - **Login and Sign Up:** Create an account and sign in. Passwords must be at least eight characters.
 - **Profile:** Requires an account and lets the signed-in user update their name and phone number.
 
-## Data storage
+## Data files
 
-On first run, the app creates `data/sheild.sqlite3` and its database tables. It does not load sample records or import the legacy CSV files. The database contains account, contact, and report data; it is excluded from Git by `.gitignore`.
+The app saves account details in `data/accounts.csv`, trusted contacts in
+`data/contacts.csv`, and community reports in `data/community_reports.csv`.
+Passwords are saved as salted hashes, not as plain text. These files are
+excluded from Git.
 
-To use a different SQLite file, set `SHEILD_DB_PATH` before starting the app:
-
-```powershell
-$env:SHEILD_DB_PATH = "C:\path\to\sheild.sqlite3"
-.\.venv\Scripts\python.exe -m streamlit run app.py
-```
-
-For hosting, point `SHEILD_DB_PATH` to persistent storage. The app uses SQLite and should run as a single instance; data on an ephemeral filesystem may be lost when the host restarts.
+This simple file storage is intended for a student demo. Do not use real
+passwords, phone numbers, or safety reports. On Streamlit hosting, local files
+may be lost when the app restarts, and simultaneous edits can overwrite each
+other.
 
 ## Project files
 
@@ -60,7 +59,7 @@ For hosting, point `SHEILD_DB_PATH` to persistent storage. The app uses SQLite a
 app.py                    App setup and navigation
 pages/                    App, account, dashboard, report, learning, and chat pages
 guidance.py               Learning content and local guidance search
-utils.py                  Account, contact, report, and SQLite operations
+utils.py                  Account, contact, report, and CSV file operations
 .streamlit/config.toml    Streamlit theme
 assets/                   Page images, favicon, and SOS audio
 data/                     Local SQLite database

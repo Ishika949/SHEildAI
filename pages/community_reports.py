@@ -1,5 +1,3 @@
-import sqlite3
-
 import streamlit as st
 
 from utils import (
@@ -12,36 +10,15 @@ from utils import (
 )
 
 render_page_sidebar()
-st.title("Community Report")
+st.title("🛡️ SHEild AI")
+st.header("📣 Community Report")
+st.write("Read reports from the community or share a concern.")
+st.image(
+    str(BASE_DIR / "assets" / "images" / "img-report.png"),
+    width="stretch",
+)
 
-intro_column, image_column = st.columns([1.3, 0.9], gap="large")
-with intro_column:
-    st.write("Read reports from the community or share a concern.")
-with image_column:
-    st.image(
-        str(BASE_DIR / "assets" / "images" / "img-report.png"),
-        width="stretch",
-    )
-
-st.space("medium")
-try:
-    reports = load_reports()
-except (OSError, sqlite3.Error, ValueError) as error:
-    st.error(f"Reports could not be loaded: {error}")
-else:
-    if not reports:
-        st.info("No reports yet. New reports will appear here after submission.")
-    for report in reports:
-        with st.container(border=True):
-            category_column, urgency_column, date_column = st.columns([1.2, 1, 1])
-            category_column.markdown(f"**{report['category']}**")
-            urgency_column.write(f"{report['urgency']} urgency")
-            date_column.caption(report["date"])
-            st.subheader(report["location"])
-            st.write(report["description"])
-
-st.space("large")
-st.subheader("Share a concern")
+st.subheader("📝 Share a concern")
 
 with st.form("community_report_form"):
     category = st.selectbox("Concern type", REPORT_CATEGORIES)
@@ -52,12 +29,32 @@ with st.form("community_report_form"):
         max_chars=1000,
         height=120,
     )
-    submit = st.form_submit_button("Submit report")
+    submit = st.form_submit_button(
+        "📤 Submit report",
+        key="submit_community_report",
+    )
 
 if submit:
     try:
         save_report(category, location, urgency, description)
         st.success("Report published.")
-        st.rerun()
-    except (ValueError, OSError, sqlite3.Error) as error:
+    except (ValueError, OSError) as error:
         st.error(f"The report could not be saved: {error}")
+
+st.divider()
+st.subheader("Recent reports")
+
+try:
+    reports = load_reports()
+except (OSError, ValueError) as error:
+    st.error(f"Reports could not be loaded: {error}")
+else:
+    if not reports:
+        st.info("No reports yet. New reports will appear here after submission.")
+    for report in reports:
+        st.subheader(report["category"])
+        st.write(f"Location: {report['location']}")
+        st.write(f"Urgency: {report['urgency']}")
+        st.caption(report["date"])
+        st.write(report["description"])
+        st.divider()

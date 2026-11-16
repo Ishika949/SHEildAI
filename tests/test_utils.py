@@ -1,4 +1,5 @@
 import tempfile
+import csv
 import unittest
 from pathlib import Path
 
@@ -30,11 +31,11 @@ class UtilsTests(unittest.TestCase):
             account,
         )
         self.assertIsNone(utils.authenticate("person@example.test", "wrong-password"))
-        with utils._database() as connection:
-            stored = connection.execute(
-                "SELECT password_hash FROM accounts WHERE email = ?",
-                ("person@example.test",),
-            ).fetchone()
+        with (utils.DATA_DIR / "accounts.csv").open(
+            newline="",
+            encoding="utf-8",
+        ) as file:
+            stored = next(csv.DictReader(file))
         self.assertNotEqual(stored["password_hash"], "classroom-password")
 
     def test_duplicate_accounts_are_rejected(self):
@@ -47,7 +48,28 @@ class UtilsTests(unittest.TestCase):
         )
         self.assertIsNone(duplicate)
 
-    def test_database_starts_without_sample_reports(self):
+    def test_account_changes_are_saved_to_csv(self):
+        account = utils.create_account(
+            "profile@example.test",
+            "Original Name",
+            "",
+            "classroom-password",
+        )
+
+        updated = utils.update_account(account["id"], "Updated Name", "555-0101")
+
+        self.assertEqual(updated["name"], "Updated Name")
+        self.assertEqual(updated["phone"], "555-0101")
+        self.assertEqual(
+            utils.authenticate("profile@example.test", "classroom-password"),
+            updated,
+        )
+
+    def test_csv_files_start_empty_without_a_database(self):
+        self.assertTrue((utils.DATA_DIR / "accounts.csv").is_file())
+        self.assertTrue((utils.DATA_DIR / "contacts.csv").is_file())
+        self.assertTrue((utils.DATA_DIR / "community_reports.csv").is_file())
+        self.assertFalse(list(utils.DATA_DIR.glob("*.sqlite3")))
         self.assertEqual(utils.load_reports(), [])
 
     def test_report_saves_urgency_and_is_public(self):

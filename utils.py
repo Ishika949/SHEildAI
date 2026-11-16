@@ -1,11 +1,9 @@
+import csv
 import hashlib
 import hmac
-import os
 import re
-import sqlite3
 import uuid
-from contextlib import contextmanager
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -14,60 +12,72 @@ REPORT_CATEGORIES = ["Harassment", "Unsafe Area", "Stalking", "General Safety Co
 URGENCY_LEVELS = ["Low", "Moderate", "High"]
 PASSWORD_LENGTH = 8
 MAX_CONTACTS = 3
+ACCOUNT_FIELDS = ["id", "email", "name", "phone", "salt", "password_hash"]
+CONTACT_FIELDS = ["id", "user_id", "name", "phone"]
+REPORT_FIELDS = [
+    "id",
+    "category",
+    "location",
+    "description",
+    "urgency",
+    "date",
+    "created_at",
+]
 
 
-def database_path():
-    configured_path = os.environ.get("SHEILD_DB_PATH")
-    return Path(configured_path).expanduser() if configured_path else DATA_DIR / "sheild.sqlite3"
+def _csv_path(file_name):
+    return DATA_DIR / file_name
 
 
-@contextmanager
-def _database():
-    path = database_path()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    connection = sqlite3.connect(path, timeout=30)
-    connection.row_factory = sqlite3.Row
-    connection.execute("PRAGMA foreign_keys = ON")
+def _read_csv(file_name, fieldnames):
+    path = _csv_path(file_name)
     try:
-        with connection:
-            yield connection
-    finally:
-        connection.close()
+        with path.open(newline="", encoding="utf-8-sig") as file:
+            reader = csv.DictReader(file)
+            if reader.fieldnames is None or not set(fieldnames).issubset(reader.fieldnames):
+                raise ValueError(f"{file_name} has an invalid header.")
+            return [
+                {field: row.get(field, "") or "" for field in fieldnames}
+                for row in reader
+            ]
+    except csv.Error as error:
+        raise ValueError(f"{file_name} is not a valid CSV file.") from error
+
+
+def _write_csv(file_name, fieldnames, rows):
+    path = _csv_path(file_name)
+    try:
+        with path.open("w", newline="", encoding="utf-8") as file:
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(rows)
+    except csv.Error as error:
+        raise ValueError(f"{file_name} could not be written.") from error
+
+
+def _append_csv(file_name, fieldnames, row):
+    path = _csv_path(file_name)
+    if not path.exists():
+        _write_csv(file_name, fieldnames, [])
+    else:
+        _read_csv(file_name, fieldnames)
+    try:
+        with path.open("a", newline="", encoding="utf-8") as file:
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writerow(row)
+    except csv.Error as error:
+        raise ValueError(f"{file_name} could not be written.") from error
 
 
 def initialize_data():
-    with _database() as connection:
-        connection.execute("PRAGMA journal_mode = WAL")
-        connection.executescript(
-            """
-            CREATE TABLE IF NOT EXISTS accounts (
-                id TEXT PRIMARY KEY,
-                email TEXT NOT NULL UNIQUE,
-                name TEXT NOT NULL,
-                phone TEXT NOT NULL DEFAULT '',
-                salt TEXT NOT NULL,
-                password_hash TEXT NOT NULL,
-                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-            );
-            CREATE TABLE IF NOT EXISTS contacts (
-                id TEXT PRIMARY KEY,
-                user_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
-                name TEXT NOT NULL,
-                phone TEXT NOT NULL
-            );
-            CREATE INDEX IF NOT EXISTS contacts_user_id_idx ON contacts(user_id);
-            CREATE TABLE IF NOT EXISTS reports (
-                id TEXT PRIMARY KEY,
-                category TEXT NOT NULL,
-                location TEXT NOT NULL,
-                description TEXT NOT NULL,
-                urgency TEXT NOT NULL,
-                date TEXT NOT NULL,
-                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-            );
-            CREATE INDEX IF NOT EXISTS reports_date_idx ON reports(date DESC);
-            """
-        )
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    for file_name, fieldnames in (
+        ("accounts.csv", ACCOUNT_FIELDS),
+        ("contacts.csv", CONTACT_FIELDS),
+        ("community_reports.csv", REPORT_FIELDS),
+    ):
+        if not _csv_path(file_name).exists():
+            _write_csv(file_name, fieldnames, [])
 
 
 def public_account(account):
@@ -107,6 +117,10 @@ def _password_hash(password, salt):
 
 def create_account(email, name, phone, password):
     email, name, phone = _validate_account_input(email, name, phone, password)
+    accounts = _read_csv("accounts.csv", ACCOUNT_FIELDS)
+    if any(account["email"].strip().lower() == email for account in accounts):
+        return None
+
     salt = uuid.uuid4().hex
     account = {
         "id": str(uuid.uuid4()),
@@ -116,36 +130,21 @@ def create_account(email, name, phone, password):
         "salt": salt,
         "password_hash": _password_hash(password, salt),
     }
-    try:
-        with _database() as connection:
-            connection.execute(
-                """
-                INSERT INTO accounts (id, email, name, phone, salt, password_hash)
-                VALUES (?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    account["id"],
-                    account["email"],
-                    account["name"],
-                    account["phone"],
-                    account["salt"],
-                    account["password_hash"],
-                ),
-            )
-    except sqlite3.IntegrityError as error:
-        if "accounts.email" in str(error):
-            return None
-        raise
+    _append_csv("accounts.csv", ACCOUNT_FIELDS, account)
     return public_account(account)
 
 
 def authenticate(email, password):
     normalized_email = email.strip().lower()
-    with _database() as connection:
-        account = connection.execute(
-            "SELECT id, email, name, phone, salt, password_hash FROM accounts WHERE email = ?",
-            (normalized_email,),
-        ).fetchone()
+    accounts = _read_csv("accounts.csv", ACCOUNT_FIELDS)
+    account = next(
+        (
+            account
+            for account in accounts
+            if account["email"].strip().lower() == normalized_email
+        ),
+        None,
+    )
     if account is None or not account["salt"] or not account["password_hash"]:
         return None
     try:
@@ -165,28 +164,26 @@ def update_account(account_id, name, phone):
         raise ValueError("Enter a name between 1 and 80 characters.")
     if len(phone) > 32:
         raise ValueError("Phone number must be 32 characters or fewer.")
-    with _database() as connection:
-        connection.execute(
-            "UPDATE accounts SET name = ?, phone = ? WHERE id = ?",
-            (name, phone, account_id),
-        )
-        account = connection.execute(
-            "SELECT id, email, name, phone FROM accounts WHERE id = ?",
-            (account_id,),
-        ).fetchone()
-    return public_account(account) if account else None
+    accounts = _read_csv("accounts.csv", ACCOUNT_FIELDS)
+    for account in accounts:
+        if account["id"] == account_id:
+            account["name"] = name
+            account["phone"] = phone
+            _write_csv("accounts.csv", ACCOUNT_FIELDS, accounts)
+            return public_account(account)
+    return None
 
 
 def load_reports():
-    with _database() as connection:
-        reports = connection.execute(
-            """
-            SELECT id, category, location, description, urgency, date
-            FROM reports
-            ORDER BY date DESC, created_at DESC
-            """
-        ).fetchall()
-    return [dict(report) for report in reports]
+    reports = _read_csv("community_reports.csv", REPORT_FIELDS)
+    reports.sort(
+        key=lambda report: (report["date"], report["created_at"]),
+        reverse=True,
+    )
+    return [
+        {field: report[field] for field in REPORT_FIELDS if field != "created_at"}
+        for report in reports
+    ]
 
 
 def save_report(category, location, urgency, description):
@@ -208,32 +205,19 @@ def save_report(category, location, urgency, description):
         "description": description,
         "urgency": urgency,
         "date": date.today().isoformat(),
+        "created_at": datetime.now().isoformat(timespec="microseconds"),
     }
-    with _database() as connection:
-        connection.execute(
-            """
-            INSERT INTO reports (id, category, location, description, urgency, date)
-            VALUES (?, ?, ?, ?, ?, ?)
-            """,
-            (
-                report["id"],
-                report["category"],
-                report["location"],
-                report["description"],
-                report["urgency"],
-                report["date"],
-            ),
-        )
-    return report
+    _append_csv("community_reports.csv", REPORT_FIELDS, report)
+    return {field: report[field] for field in REPORT_FIELDS if field != "created_at"}
 
 
 def load_contacts(user_id):
-    with _database() as connection:
-        contacts = connection.execute(
-            "SELECT id, name, phone FROM contacts WHERE user_id = ? ORDER BY rowid",
-            (user_id,),
-        ).fetchall()
-    return [dict(contact) for contact in contacts]
+    contacts = _read_csv("contacts.csv", CONTACT_FIELDS)
+    return [
+        {"id": contact["id"], "name": contact["name"], "phone": contact["phone"]}
+        for contact in contacts
+        if contact["user_id"] == user_id
+    ]
 
 
 def save_contacts(user_id, contacts):
@@ -250,19 +234,23 @@ def save_contacts(user_id, contacts):
         normalized.append({"name": name, "phone": phone})
     if len(normalized) > MAX_CONTACTS:
         raise ValueError("Save no more than three trusted contacts.")
+    accounts = _read_csv("accounts.csv", ACCOUNT_FIELDS)
+    if not any(account["id"] == user_id for account in accounts):
+        raise ValueError("The account could not be found.")
+
     saved = [
         {"id": str(uuid.uuid4()), "name": contact["name"], "phone": contact["phone"]}
         for contact in normalized
     ]
-    with _database() as connection:
-        connection.execute("DELETE FROM contacts WHERE user_id = ?", (user_id,))
-        connection.executemany(
-            "INSERT INTO contacts (id, user_id, name, phone) VALUES (?, ?, ?, ?)",
-            [
-                (contact["id"], user_id, contact["name"], contact["phone"])
-                for contact in saved
-            ],
-        )
+    contacts = _read_csv("contacts.csv", CONTACT_FIELDS)
+    other_contacts = [
+        contact for contact in contacts if contact["user_id"] != user_id
+    ]
+    new_contacts = [
+        {"id": contact["id"], "user_id": user_id, "name": contact["name"], "phone": contact["phone"]}
+        for contact in saved
+    ]
+    _write_csv("contacts.csv", CONTACT_FIELDS, other_contacts + new_contacts)
     return saved
 
 
@@ -271,11 +259,11 @@ def render_page_sidebar():
 
     account = st.session_state.get("current_user")
     with st.sidebar:
-        st.markdown("### SHEild AI")
+        st.markdown("### 🛡️ SHEild AI")
         st.caption("Safety planning and community information")
         if account:
             st.caption(f"Signed in as {account['name']}")
-            if st.button("Sign out", key="page_sign_out"):
+            if st.button("🚪 Sign out", key="page_sign_out"):
                 st.session_state.pop("current_user", None)
                 st.rerun()
     return account
@@ -287,6 +275,6 @@ def require_account():
     account = render_page_sidebar()
     if not account:
         st.warning("Sign in to manage your contacts and profile.")
-        st.page_link("pages/login.py", label="Login")
+        st.page_link("pages/login.py", label="🔐 Login")
         st.stop()
     return account
