@@ -25,7 +25,7 @@ elif selected_topic == "What To Do in an Unsafe Situation":
 
 topic = GUIDANCE_TOPICS[selected_topic]
 
-content_column, image_column = st.columns([0.6, 1], gap="large")
+content_column, image_column = st.columns([0.6, 1], gap="small")
 with content_column:
     if topic["introduction"]:
         st.write(topic["introduction"])
