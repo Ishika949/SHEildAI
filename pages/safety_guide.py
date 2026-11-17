@@ -20,7 +20,7 @@ def assistant_reply(question):
 
 render_page_sidebar()
 
-text,img = st.columns([0.5, 1], gap="small")
+text,img = st.columns([0.6, 1], gap="small")
 
 with text:
     st.title("🛡️ SHEild AI")
