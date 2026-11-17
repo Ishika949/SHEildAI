@@ -24,7 +24,7 @@ def render_home():
                 st.rerun()
 
   
-    intro_column, image_column = st.columns([1.3, 0.9], gap="large")
+    intro_column, image_column = st.columns([1.3, 0.9], gap="small")
     with intro_column:
         st.title("Plan for everyday safety")
         st.write(
