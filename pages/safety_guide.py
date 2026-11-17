@@ -29,7 +29,7 @@ with text:
 with img:
     st.image(
         str(BASE_DIR / "assets" / "images" / "Dashboard.jpeg"),
-        width="stretch",
+        width=900,
     )
 
 st.session_state.setdefault("ai_chat_messages", [INITIAL_MESSAGE.copy()])
