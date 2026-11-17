@@ -25,7 +25,7 @@ def render_home():
 
     st.image(
             str(BASE_DIR / "assets" / "images" / "hero.jpeg"),
-            width="stretch",
+            width = 900,
         )
 
     st.title("Plan for everyday safety 🛡️")
