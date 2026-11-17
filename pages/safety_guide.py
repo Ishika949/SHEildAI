@@ -23,7 +23,7 @@ st.title("🛡️ SHEild AI")
 st.header("💬 AI Chat")
 st.write("Ask about safety planning, rights, or getting help.")
 st.image(
-    str(BASE_DIR / "assets" / "images" / "img-chat.png"),
+    str(BASE_DIR / "assets" / "images" / "Dashboard.jpeg"),
     width="stretch",
 )
 
