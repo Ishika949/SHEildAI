@@ -13,7 +13,7 @@ st.header("🚨 Emergency Dashboard")
 st.write("Add trusted contacts for your emergency plan.")
 
 st.image(
-    str(BASE_DIR / "assets" / "images" / "img-dashboard.png"),
+    str(BASE_DIR / "assets" / "images" / "Dashboard.jpeg"),
     width="stretch",
 )
 
