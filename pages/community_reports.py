@@ -14,7 +14,7 @@ st.title("🛡️ SHEild AI")
 st.header("📣 Community Report")
 st.write("Read reports from the community or share a concern.")
 st.image(
-    str(BASE_DIR / "assets" / "images" / "img-report.png"),
+    str(BASE_DIR / "assets" / "images" / "reports.jpeg"),
     width="stretch",
 )
 
