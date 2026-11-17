@@ -28,7 +28,7 @@ with text:
     st.write("Ask about safety planning, rights, or getting help.")
 with img:
     st.image(
-        str(BASE_DIR / "assets" / "images" / "Dashboard.jpeg"),
+        str(BASE_DIR / "assets" / "images" / "AIChat.jpeg"),
         width=900,
     )
 
