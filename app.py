@@ -23,17 +23,16 @@ def render_home():
                 st.session_state.pop("current_user", None)
                 st.rerun()
 
-    intro_column, image_column = st.columns([1.3, 0.9], gap="large")
-    with intro_column:
-        st.title("Plan for everyday safety 🛡️")
-        st.write(
-            "Find practical information, share a local report, or manage trusted contacts."
-        )
-    with image_column:
-        st.image(
-            str(BASE_DIR / "assets" / "images" / "img-app.png"),
+    st.image(
+            str(BASE_DIR / "assets" / "images" / "hero.jpeg"),
             width="stretch",
         )
+
+    st.title("Plan for everyday safety 🛡️")
+    st.write(
+            "Find practical information, share a local report, or manage trusted contacts."
+        )
+    
 
     st.warning(
         "If you are in immediate danger, move toward a populated place if you can and contact "
