@@ -42,6 +42,6 @@ with content_column:
         st.warning(topic["warning"])
 with image_column:
     st.image(
-        str(BASE_DIR / "assets" / "images" / "img-learning.png"),
+        str(BASE_DIR / "assets" / "images" / "Learning.jpeg"),
         width="stretch",
     )
